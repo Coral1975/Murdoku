@@ -25,7 +25,7 @@
   /* horizontal region borders */
   .cell:nth-child(n+7):nth-child(-n+12){border-bottom:3px solid var(--thick)}
   .cell:nth-child(n+19):nth-child(-n+24){border-bottom:3px solid var(--thick)}
-  .cell.given{background:#eef3ff;font-weight:700;color:#183b9e}
+  .cell.linked{background:#eef3ff}
   .cell input{width:60%;height:60%;text-align:center;border:1px solid #cbd2dc;font-size:22px;padding:0}
   .qtag{position:absolute;top:3px;left:4px;font-size:10px;color:#667085}
   .questions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
@@ -90,21 +90,21 @@ const solution=[
 
 // Each clue is placed at a cell whose solution value equals the correct answer.
 const clues={
- Q1:{row:3,col:3,answer:2,title:"Q1 – Temperatur",text:"En elev målte temperaturen i et rom fire ganger:\\n1 °C, 2 °C, 2 °C, 3 °C\\nHva er gjennomsnittstemperaturen?"},
- Q2:{row:3,col:1,answer:6,title:"Q2 – Plantestudier",text:"Fire planter ble målt. Høyden var:\\n5 cm, 6 cm, 6 cm, 7 cm\\nHva er gjennomsnittshøyden?"},
- Q3:{row:0,col:5,answer:6,title:"Q3 – Dyreobservasjoner",text:"Hvor mange fugler ble observert på lørdag?\\nMandag 5 · Tirsdag 4 · Onsdag 3 · Torsdag 2 · Fredag 1 · Lørdag 6"},
- Q4:{row:2,col:2,answer:4,title:"Q4 – Frøspiring",text:"Antall dager det tok før fem frø spirte:\\n3, 4, 4, 5, 6\\nHva er medianen?"},
- Q5:{row:5,col:0,answer:6,title:"Q5 – Temperaturmålinger",text:"Temperaturen ble målt seks ganger:\\n4 °C, 5 °C, 6 °C, 6 °C, 7 °C, 8 °C\\nHva er medianen?"},
- Q6:{row:3,col:4,answer:3,title:"Q6 – Værmålinger",text:"Antall millimeter nedbør på fem dager var:\\n2, 3, 3, 4, 5\\nHva er medianen?"},
- Q7:{row:3,col:5,answer:4,title:"Q7 – Dyr i et område",text:"Antall dyr som ble observert:\\n4, 5, 4, 6, 4, 3\\nHva er typetallet?"},
- Q8:{row:3,col:0,answer:5,title:"Q8 – Plantemålinger",text:"Antall blader på forskjellige planter:\\n5, 4, 5, 6, 5, 3\\nHva er typetallet?"},
- Q9:{row:2,col:5,answer:1,title:"Q9 – Vær",text:"Antall regnværsdager i ulike uker:\\n1, 2, 1, 3, 1, 4\\nHva er typetallet?"},
- Q10:{row:5,col:1,answer:1,title:"Q10 – Eksperiment",text:"Antall bobler som ble produsert hvert minutt:\\n0, 1, 1, 2\\nHva er gjennomsnittet?"},
- Q11:{row:1,col:5,answer:3,title:"Q11 – Temperatur",text:"Temperaturen i et laboratorium:\\n4 °C, 4 °C, 5 °C, 5 °C, 5 °C, 6 °C\\nHva er frekvensen til 5 °C?"},
- Q12:{row:5,col:5,answer:5,title:"Q12 – Dyreobservasjon",text:"Antall insekter observert:\\n0, 1, 1, 1, 2, 2, 2, 2, 2\\nHva er frekvensen til tallet 2?"},
- Q13:{row:1,col:3,answer:1,title:"Q13 – Plantevekst",text:"Høyden til fire planter var:\\n4 cm, 5 cm, 5 cm, 5 cm\\nHva er variasjonsbredden?"},
- Q14:{row:2,col:0,answer:2,title:"Q14 – Temperatur",text:"Fire temperaturmålinger viste:\\n2 °C, 3 °C, 4 °C, 4 °C\\nHva er variasjonsbredden?"},
- Q15:{row:0,col:0,answer:1,title:"Q15 – Nedbør",text:"Nedbørsmengden på fire dager var:\\n1 mm, 1 mm, 2 mm, 2 mm\\nHva er variasjonsbredden?"},
+ Q1:{row:3,col:3,answer:2,title:"Q1 – Temperatur",text:"En elev målte temperaturen i et rom fire ganger:\n1 °C, 2 °C, 2 °C, 3 °C\nHva er gjennomsnittstemperaturen?"},
+ Q2:{row:3,col:1,answer:6,title:"Q2 – Plantestudier",text:"Fire planter ble målt. Høyden var:\n5 cm, 6 cm, 6 cm, 7 cm\nHva er gjennomsnittshøyden?"},
+ Q3:{row:0,col:5,answer:6,title:"Q3 – Dyreobservasjoner",text:"Hvor mange fugler ble observert på lørdag?\nMandag 5 · Tirsdag 4 · Onsdag 3 · Torsdag 2 · Fredag 1 · Lørdag 6"},
+ Q4:{row:2,col:2,answer:4,title:"Q4 – Frøspiring",text:"Antall dager det tok før fem frø spirte:\n3, 4, 4, 5, 6\nHva er medianen?"},
+ Q5:{row:5,col:0,answer:6,title:"Q5 – Temperaturmålinger",text:"Temperaturen ble målt seks ganger:\n4 °C, 5 °C, 6 °C, 6 °C, 7 °C, 8 °C\nHva er medianen?"},
+ Q6:{row:3,col:4,answer:3,title:"Q6 – Værmålinger",text:"Antall millimeter nedbør på fem dager var:\n2, 3, 3, 4, 5\nHva er medianen?"},
+ Q7:{row:3,col:5,answer:4,title:"Q7 – Dyr i et område",text:"Antall dyr som ble observert:\n4, 5, 4, 6, 4, 3\nHva er typetallet?"},
+ Q8:{row:3,col:0,answer:5,title:"Q8 – Plantemålinger",text:"Antall blader på forskjellige planter:\n5, 4, 5, 6, 5, 3\nHva er typetallet?"},
+ Q9:{row:2,col:5,answer:1,title:"Q9 – Vær",text:"Antall regnværsdager i ulike uker:\n1, 2, 1, 3, 1, 4\nHva er typetallet?"},
+ Q10:{row:5,col:1,answer:1,title:"Q10 – Eksperiment",text:"Antall bobler som ble produsert hvert minutt:\n0, 1, 1, 2\nHva er gjennomsnittet?"},
+ Q11:{row:1,col:5,answer:3,title:"Q11 – Temperatur",text:"Temperaturen i et laboratorium:\n4 °C, 4 °C, 5 °C, 5 °C, 5 °C, 6 °C\nHva er frekvensen til 5 °C?"},
+ Q12:{row:5,col:5,answer:5,title:"Q12 – Dyreobservasjon",text:"Antall insekter observert:\n0, 1, 1, 1, 2, 2, 2, 2, 2\nHva er frekvensen til tallet 2?"},
+ Q13:{row:1,col:3,answer:1,title:"Q13 – Plantevekst",text:"Høyden til fire planter var:\n4 cm, 5 cm, 5 cm, 5 cm\nHva er variasjonsbredden?"},
+ Q14:{row:2,col:0,answer:2,title:"Q14 – Temperatur",text:"Fire temperaturmålinger viste:\n2 °C, 3 °C, 4 °C, 4 °C\nHva er variasjonsbredden?"},
+ Q15:{row:0,col:0,answer:1,title:"Q15 – Nedbør",text:"Nedbørsmengden på fire dager var:\n1 mm, 1 mm, 2 mm, 2 mm\nHva er variasjonsbredden?"},
  Q16:{row:0,col:2,answer:3,title:"Q16 – Diagram",text:"Hvor mange elever valgte Energi?"},
  Q17:{row:4,col:1,answer:4,title:"Q17 – Diagram",text:"Hvor mange elever valgte Planter?"},
  Q18:{row:1,col:1,answer:5,title:"Q18 – Diagram",text:"Hvor mange elever valgte Dyr?"}
@@ -126,16 +126,17 @@ function buildBoard(){
  for(let r=0;r<6;r++)for(let c=0;c<6;c++){
    const cell=document.createElement("div"); cell.className="cell";
    const key=`${r},${c}`;
+   const inp=document.createElement("input"); inp.type="number"; inp.min=1; inp.max=6; inp.inputMode="numeric";
+   inp.dataset.row=r; inp.dataset.col=c;
+   inp.addEventListener("input",()=>{if(inp.value && (+inp.value<1||+inp.value>6)) inp.value="";});
    if(clueAt[key]){
-     cell.classList.add("given");
+     cell.classList.add("linked");
      const tag=document.createElement("span"); tag.className="qtag"; tag.textContent=clueAt[key]; cell.appendChild(tag);
-     const v=document.createElement("span"); v.textContent=clues[clueAt[key]].answer; cell.appendChild(v);
+     inp.setAttribute("aria-label",`Rad ${r+1}, kolonne ${c+1} – svar på ${clueAt[key]}`);
    }else{
-     const inp=document.createElement("input"); inp.type="number"; inp.min=1; inp.max=6; inp.inputMode="numeric";
-     inp.dataset.row=r; inp.dataset.col=c; inp.setAttribute("aria-label",`Rad ${r+1}, kolonne ${c+1}`);
-     inp.addEventListener("input",()=>{if(inp.value && (+inp.value<1||+inp.value>6)) inp.value="";});
-     cell.appendChild(inp);
+     inp.setAttribute("aria-label",`Rad ${r+1}, kolonne ${c+1}`);
    }
+   cell.appendChild(inp);
    b.appendChild(cell);
  }
 }
