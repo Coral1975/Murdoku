@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Statistikk-Murdoku 6×6 – Naturfag</title>
+<style>
+  :root{--bg:#f5f7fb;--card:#fff;--ink:#172033;--muted:#667085;--accent:#2457d6;--good:#087443;--bad:#b42318;--line:#b8c0cc;--thick:#344054}
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,sans-serif}
+  .wrap{max-width:1180px;margin:auto;padding:24px}
+  h1{margin:0 0 4px;font-size:30px} h2{margin-top:28px} h3{margin-bottom:8px}
+  .subtitle{color:var(--muted);margin-bottom:18px}
+  .top{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:12px 0 20px}
+  input{padding:10px 12px;border:1px solid #cbd2dc;border-radius:8px;font-size:16px}
+  button{border:0;border-radius:8px;padding:11px 16px;font-weight:700;cursor:pointer;background:var(--accent);color:white}
+  button.secondary{background:#e8edf7;color:#23314d} button:disabled{opacity:.5;cursor:not-allowed}
+  .layout{display:grid;grid-template-columns:minmax(320px,560px) 1fr;gap:24px;align-items:start}
+  .card{background:var(--card);border-radius:14px;padding:18px;box-shadow:0 2px 12px #10182812}
+  .timer{font-size:24px;font-weight:700;margin-left:auto}
+  .board{display:grid;grid-template-columns:repeat(6,1fr);border:3px solid var(--thick);max-width:540px;aspect-ratio:1}
+  .cell{position:relative;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;background:#fff}
+  .cell:nth-child(3n){border-right:3px solid var(--thick)}
+  .cell:nth-child(6n){border-right:0}
+  .cell:nth-child(-n+6){border-top:0}
+  /* horizontal region borders */
+  .cell:nth-child(n+7):nth-child(-n+12){border-bottom:3px solid var(--thick)}
+  .cell:nth-child(n+19):nth-child(-n+24){border-bottom:3px solid var(--thick)}
+  .cell.given{background:#eef3ff;font-weight:700;color:#183b9e}
+  .cell input{width:60%;height:60%;text-align:center;border:1px solid #cbd2dc;font-size:22px;padding:0}
+  .qtag{position:absolute;top:3px;left:4px;font-size:10px;color:#667085}
+  .questions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .q{border:1px solid #d8dee8;border-radius:10px;padding:12px;background:#fff}
+  .q.correct{border-color:#7cc9a3;background:#f1fbf5}.q.error{border-color:#f0a09a;background:#fff5f4}
+  .qtitle{font-weight:700}.qdata{white-space:pre-line;margin:7px 0;color:#344054}
+  .answer{width:80px;text-align:center}
+  .diagram{font-family:monospace;white-space:pre;margin:8px 0;font-size:12px}
+  .status{margin-top:12px;padding:12px;border-radius:9px;display:none}
+  .status.good{display:block;background:#ecfdf3;color:var(--good)} .status.bad{display:block;background:#fff4ed;color:var(--bad)}
+  .result{display:none;margin-top:16px;padding:18px;border-radius:12px;background:#ecfdf3;color:var(--good);font-size:18px;font-weight:700}
+  .small{font-size:13px;color:var(--muted)}
+  @media(max-width:850px){.layout{grid-template-columns:1fr}.questions{grid-template-columns:1fr}.timer{margin-left:0}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🔬 STATISTIKK-MURDOKU 6×6</h1>
+  <div class="subtitle">Statistikk i naturfag · gruppekonkurranse</div>
+
+  <div class="card">
+    <div class="top">
+      <label>Gruppenavn:
+        <input id="group" placeholder="Skriv gruppenavn">
+      </label>
+      <button id="start">Start</button>
+      <button id="reset" class="secondary">Start på nytt</button>
+      <div class="timer" id="timer">00:00</div>
+    </div>
+    <div class="small">Løs statistikkoppgavene, fyll inn Murdokuet og trykk «Kontroller Murdoku».</div>
+  </div>
+
+  <div class="layout">
+    <div class="card">
+      <h2>🧩 Murdoku</h2>
+      <div id="board" class="board" aria-label="Murdoku 6x6"></div>
+      <div class="top">
+        <button id="check">Kontroller Murdoku</button>
+        <button id="clear" class="secondary">Tøm egne tall</button>
+      </div>
+      <div id="boardStatus" class="status"></div>
+      <div id="result" class="result"></div>
+    </div>
+
+    <div class="card">
+      <h2>🔬 Statistikkoppgaver</h2>
+      <div class="small">Oppgavene er blandet. Du må selv finne hvilket statistisk begrep du skal bruke.</div>
+      <div id="questions" class="questions"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const solution=[
+ [1,2,3,4,5,6],
+ [4,5,6,1,2,3],
+ [2,3,4,5,6,1],
+ [5,6,1,2,3,4],
+ [3,4,5,6,1,2],
+ [6,1,2,3,4,5]
+];
+
+// Each clue is placed at a cell whose solution value equals the correct answer.
+const clues={
+ Q1:{row:3,col:3,answer:2,title:"Q1 – Temperatur",text:"En elev målte temperaturen i et rom fire ganger:\\n1 °C, 2 °C, 2 °C, 3 °C\\nHva er gjennomsnittstemperaturen?"},
+ Q2:{row:3,col:1,answer:6,title:"Q2 – Plantestudier",text:"Fire planter ble målt. Høyden var:\\n5 cm, 6 cm, 6 cm, 7 cm\\nHva er gjennomsnittshøyden?"},
+ Q3:{row:0,col:5,answer:6,title:"Q3 – Dyreobservasjoner",text:"Hvor mange fugler ble observert på lørdag?\\nMandag 5 · Tirsdag 4 · Onsdag 3 · Torsdag 2 · Fredag 1 · Lørdag 6"},
+ Q4:{row:2,col:2,answer:4,title:"Q4 – Frøspiring",text:"Antall dager det tok før fem frø spirte:\\n3, 4, 4, 5, 6\\nHva er medianen?"},
+ Q5:{row:5,col:0,answer:6,title:"Q5 – Temperaturmålinger",text:"Temperaturen ble målt seks ganger:\\n4 °C, 5 °C, 6 °C, 6 °C, 7 °C, 8 °C\\nHva er medianen?"},
+ Q6:{row:3,col:4,answer:3,title:"Q6 – Værmålinger",text:"Antall millimeter nedbør på fem dager var:\\n2, 3, 3, 4, 5\\nHva er medianen?"},
+ Q7:{row:3,col:5,answer:4,title:"Q7 – Dyr i et område",text:"Antall dyr som ble observert:\\n4, 5, 4, 6, 4, 3\\nHva er typetallet?"},
+ Q8:{row:3,col:0,answer:5,title:"Q8 – Plantemålinger",text:"Antall blader på forskjellige planter:\\n5, 4, 5, 6, 5, 3\\nHva er typetallet?"},
+ Q9:{row:2,col:5,answer:1,title:"Q9 – Vær",text:"Antall regnværsdager i ulike uker:\\n1, 2, 1, 3, 1, 4\\nHva er typetallet?"},
+ Q10:{row:5,col:1,answer:1,title:"Q10 – Eksperiment",text:"Antall bobler som ble produsert hvert minutt:\\n0, 1, 1, 2\\nHva er gjennomsnittet?"},
+ Q11:{row:1,col:5,answer:3,title:"Q11 – Temperatur",text:"Temperaturen i et laboratorium:\\n4 °C, 4 °C, 5 °C, 5 °C, 5 °C, 6 °C\\nHva er frekvensen til 5 °C?"},
+ Q12:{row:5,col:5,answer:5,title:"Q12 – Dyreobservasjon",text:"Antall insekter observert:\\n0, 1, 1, 1, 2, 2, 2, 2, 2\\nHva er frekvensen til tallet 2?"},
+ Q13:{row:1,col:3,answer:1,title:"Q13 – Plantevekst",text:"Høyden til fire planter var:\\n4 cm, 5 cm, 5 cm, 5 cm\\nHva er variasjonsbredden?"},
+ Q14:{row:2,col:0,answer:2,title:"Q14 – Temperatur",text:"Fire temperaturmålinger viste:\\n2 °C, 3 °C, 4 °C, 4 °C\\nHva er variasjonsbredden?"},
+ Q15:{row:0,col:0,answer:1,title:"Q15 – Nedbør",text:"Nedbørsmengden på fire dager var:\\n1 mm, 1 mm, 2 mm, 2 mm\\nHva er variasjonsbredden?"},
+ Q16:{row:0,col:2,answer:3,title:"Q16 – Diagram",text:"Hvor mange elever valgte Energi?"},
+ Q17:{row:4,col:1,answer:4,title:"Q17 – Diagram",text:"Hvor mange elever valgte Planter?"},
+ Q18:{row:1,col:1,answer:5,title:"Q18 – Diagram",text:"Hvor mange elever valgte Dyr?"}
+};
+
+const diagram=`Dyr          █████        5
+Planter      ████         4
+Energi       ███          3
+Vær          ██           2
+Steiner      █            1
+Verdensrom   ██████       6`;
+
+let running=false,startTime=0,timerId=null;
+
+function buildBoard(){
+ const b=document.getElementById("board"); b.innerHTML="";
+ const clueAt={};
+ Object.entries(clues).forEach(([id,q])=>clueAt[`${q.row},${q.col}`]=id);
+ for(let r=0;r<6;r++)for(let c=0;c<6;c++){
+   const cell=document.createElement("div"); cell.className="cell";
+   const key=`${r},${c}`;
+   if(clueAt[key]){
+     cell.classList.add("given");
+     const tag=document.createElement("span"); tag.className="qtag"; tag.textContent=clueAt[key]; cell.appendChild(tag);
+     const v=document.createElement("span"); v.textContent=clues[clueAt[key]].answer; cell.appendChild(v);
+   }else{
+     const inp=document.createElement("input"); inp.type="number"; inp.min=1; inp.max=6; inp.inputMode="numeric";
+     inp.dataset.row=r; inp.dataset.col=c; inp.setAttribute("aria-label",`Rad ${r+1}, kolonne ${c+1}`);
+     inp.addEventListener("input",()=>{if(inp.value && (+inp.value<1||+inp.value>6)) inp.value="";});
+     cell.appendChild(inp);
+   }
+   b.appendChild(cell);
+ }
+}
+function buildQuestions(){
+ const container=document.getElementById("questions"); container.innerHTML="";
+ const ids=Object.keys(clues);
+ ids.forEach(id=>{
+   const q=clues[id], div=document.createElement("div"); div.className="q"; div.id=id;
+   div.innerHTML=`<div class="qtitle">${q.title}</div><div class="qdata">${q.text}</div>
+     ${["Q3","Q16","Q17","Q18"].includes(id)?"<div class='diagram'>"+diagram+"</div>":""}
+     <label>Svar: <input class="answer" type="number" min="1" max="6" id="ans-${id}"></label>`;
+   container.appendChild(div);
+ });
+}
+function elapsed(){
+ return Math.floor((Date.now()-startTime)/1000);
+}
+function formatTime(s){
+ const m=Math.floor(s/60), sec=s%60; return String(m).padStart(2,"0")+":"+String(sec).padStart(2,"0");
+}
+function tick(){document.getElementById("timer").textContent=formatTime(elapsed());}
+function start(){
+ if(running)return;
+ const name=document.getElementById("group").value.trim();
+ if(!name){alert("Skriv inn gruppenavn før dere starter.");return;}
+ running=true; startTime=Date.now(); timerId=setInterval(tick,250);
+ document.getElementById("start").disabled=true;
+}
+function reset(){
+ running=false; clearInterval(timerId); timerId=null; startTime=0; document.getElementById("timer").textContent="00:00";
+ document.getElementById("start").disabled=false;
+ document.getElementById("boardStatus").className="status"; document.getElementById("boardStatus").textContent="";
+ document.getElementById("result").style.display="none";
+ document.querySelectorAll(".answer").forEach(x=>x.value="");
+ document.querySelectorAll(".q").forEach(x=>x.className="q");
+ buildBoard();
+}
+function checkQuestions(){
+ let errors=0, unanswered=0;
+ Object.entries(clues).forEach(([id,q])=>{
+   const el=document.getElementById("ans-"+id), box=document.getElementById(id);
+   box.className="q";
+   if(!el.value){unanswered++; return;}
+   if(Number(el.value)===q.answer) box.classList.add("correct");
+   else {box.classList.add("error"); errors++;}
+ });
+ return {errors,unanswered};
+}
+function checkBoard(){
+ if(!running){alert("Trykk «Start» først.");return;}
+ const qs=checkQuestions();
+ if(qs.unanswered||qs.errors){
+   const s=document.getElementById("boardStatus"); s.className="status bad";
+   s.textContent=`Sjekk statistikkoppgavene. ${qs.unanswered} ubesvart(e), ${qs.errors} feil(e).`;
+   return;
+ }
+ let ok=true;
+ document.querySelectorAll(".cell input").forEach(inp=>{
+   const r=+inp.dataset.row,c=+inp.dataset.col;
+   if(Number(inp.value)!==solution[r][c]) ok=false;
+ });
+ const s=document.getElementById("boardStatus");
+ if(!ok){
+   s.className="status bad"; s.textContent="Murdokuet er ikke riktig ennå. Bruk rad-, kolonne- og område-reglene.";
+   return;
+ }
+ running=false; clearInterval(timerId);
+ const t=formatTime(elapsed()), name=document.getElementById("group").value.trim();
+ s.className="status good"; s.textContent="Alt er riktig!";
+ const result=document.getElementById("result"); result.style.display="block";
+ result.innerHTML=`🏆 MURDOKU LØST!<br>${escapeHtml(name)} · Tid: ${t}`;
+}
+function clearOwn(){
+ document.querySelectorAll(".cell input").forEach(x=>x.value="");
+ document.getElementById("boardStatus").className="status";
+}
+function escapeHtml(s){return s.replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));}
+document.getElementById("start").onclick=start;
+document.getElementById("reset").onclick=reset;
+document.getElementById("check").onclick=checkBoard;
+document.getElementById("clear").onclick=clearOwn;
+buildBoard(); buildQuestions();
+</script>
+</body>
+</html>
